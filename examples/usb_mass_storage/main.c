@@ -66,11 +66,15 @@
 
 int main(void) {
     // power-cycle sd
+    gpio_init(SDRESET_PIN);
     gpio_set_dir(SDRESET_PIN, GPIO_OUT);
-    gpio_put(SDRESET_PIN, 1);
-    sleep_ms(1000);
-    gpio_put(SDRESET_PIN, 0);
-    sleep_ms(1000);
+    gpio_put(SDRESET_PIN, 0);  // Enable power initially
+    sleep_ms(100);              // Let it stabilize
+    gpio_put(SDRESET_PIN, 1);  // Disable power (active low)
+    sleep_ms(100);              // Wait for discharge
+    gpio_put(SDRESET_PIN, 0);  // Enable power (active low)
+    sleep_ms(200);              // Wait for SD card to initialize
+
 
     // Initialize the board
     board_init();
