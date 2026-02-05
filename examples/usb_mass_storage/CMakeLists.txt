@@ -25,6 +25,9 @@ project(${PROGRAM_NAME})
 
 pico_sdk_init()
 
+add_subdirectory(libs/i2ckbd i2ckbd)
+add_subdirectory(libs/lcdspi lcdspi)
+
 add_subdirectory(../../src build)
 
 add_executable(${PROGRAM_NAME}
@@ -34,12 +37,17 @@ add_executable(${PROGRAM_NAME}
   usb_descriptors.c
 )
 target_link_libraries(${PROGRAM_NAME} PRIVATE
+    i2ckbd
+    lcdspi
     no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
     pico_stdlib
     tinyusb_additions
     tinyusb_board
     tinyusb_device
 )
+
+# ram only app
+pico_set_binary_type(${PROGRAM_NAME} no_flash)
 
 target_include_directories(${PROGRAM_NAME} PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/include

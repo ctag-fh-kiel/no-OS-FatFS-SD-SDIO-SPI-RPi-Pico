@@ -72,10 +72,18 @@ For example, if clk_sys = 150000000, and baud_rate = 25000000:
 
 */
 
+
+#define SDDETECT_PIN 8
+
+#define SDIO_CLK_GPIO 2
+#define SDIO_CMD_GPIO 3
+#define SDIO_DAT0_GPIO 4
+
+
 /* SDIO Interface */
 static sd_sdio_if_t sdio_if = {
-    .CMD_gpio = 3,
-    .D0_gpio = 4,
+    .CMD_gpio = SDIO_CMD_GPIO,
+    .D0_gpio = SDIO_DAT0_GPIO,
     .set_drive_strength = true,
     .CLK_gpio_drive_strength = GPIO_DRIVE_STRENGTH_12MA,
     .CMD_gpio_drive_strength = GPIO_DRIVE_STRENGTH_4MA,
@@ -92,6 +100,7 @@ static sd_sdio_if_t sdio_if = {
 #if PICO_RP2350
     //◦The default system clock on RP2350 is 150Mhz.
     .baud_rate = 150 * 1000 * 1000 / 6  // 25000000 Hz, clk_div = 1.5
+    //.baud_rate = 150 * 1000 * 1000 / 3  // 50000000
 #endif
 };
 
@@ -101,7 +110,7 @@ static sd_card_t sd_card = {
     .sdio_if_p = &sdio_if,
     // SD Card detect:
     .use_card_detect = true,
-    .card_detect_gpio = 9,  
+    .card_detect_gpio = SDDETECT_PIN,
     .card_detected_true = 0  // What the GPIO read returns when a card is present.
 };
 

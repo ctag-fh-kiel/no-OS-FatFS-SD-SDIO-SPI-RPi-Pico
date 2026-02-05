@@ -42,16 +42,33 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <tusb.h>
+#include "ssd1309.h"
+
 //
 #include <pico/stdlib.h>
 //
 #include "diskio.h" /* Declarations of disk functions */
 #include "my_debug.h"
+#include "hardware/watchdog.h"
 
 static bool ejected = false;  // FIXME: should be LUN specific
 
-// #define TRACE_PRINTF printf
-#define TRACE_PRINTF(fmt, args...)
+#define TRACE_PRINTF(...)
+/*
+#define TRACE_PRINTF(fmt, args...) {            \
+    ssd1309_clear(); \
+    char trace_buf[128];                     \
+    snprintf(trace_buf, sizeof(trace_buf), fmt, ##args); \
+    ssd1309_print_string(trace_buf);         \
+}*/
+
+
+void tud_mount_cb(void) {
+    ejected = false;
+    ssd1309_clear();
+    ssd1309_print_string("usb msc active...");
+}
+
 
 /**
  * @brief Handles the INQUIRY request.
@@ -127,13 +144,18 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
     (void)power_condition;
     if (load_eject) {
         if (start) {
-            // load disk storage
             ejected = false;
         } else {
             // unload disk storage
             DRESULT dr = disk_ioctl(lun, CTRL_SYNC, 0);
             if (RES_OK != dr) return false;
             ejected = true;
+
+            // reboot
+            ssd1309_clear();
+            ssd1309_print_string("rebooting...");
+            sleep_ms(2000);
+            watchdog_reboot(0, 0, 0);
         }
     }
     return true;

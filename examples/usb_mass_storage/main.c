@@ -44,6 +44,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tusb.h>
+#include "i2ckbd.h"
+#include "ssd1309.h"
 
 /**
  * @file main.c
@@ -58,21 +60,41 @@
  * The example uses the TinyUSB library for USB communication and the
  * Raspberry Pi Pico SDK for hardware access.
  */
+
+#define SDRESET_PIN 17
+#define USBA_SEL_GPIO 11
+
 int main(void) {
+    // power-cycle sd
+    gpio_set_dir(SDRESET_PIN, GPIO_OUT);
+    gpio_put(SDRESET_PIN, 1);
+    sleep_ms(1000);
+    gpio_put(SDRESET_PIN, 0);
+    sleep_ms(1000);
+
     // Initialize the board
     board_init();
 
-    // Clear Screen
-    printf("\033[2J\033[H");
+    // usb sel pin, native usb
+    gpio_set_dir(USBA_SEL_GPIO, GPIO_OUT);
+    gpio_put(USBA_SEL_GPIO, 0); // select usb a port
+
+    // Initialize I2C keyboard and OLED display
+    //init_i2c_kbd();
+    ssd1309_init();
+    ssd1309_clear();
+
+    ssd1309_print_string("usb msc loaded...");
 
     // Initialize TinyUSB
     tud_init(BOARD_TUD_RHPORT);
 
     // Initialize the standard I/O streams
-    stdio_init_all();
+    //stdio_init_all();
 
     // Run the TinyUSB task loop
     while (true) {
         tud_task();
+        //int key = read_i2c_kbd();
     }
 }
